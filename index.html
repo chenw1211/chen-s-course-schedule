@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-2026学年第一学期课表</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background-color: #f0f4f8;
+            color: #1a202c;
+            min-height: 100vh;
+            padding: 20px 16px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ===== 头部区域 ===== */
+        .header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5aa0 100%);
+            border-radius: 16px;
+            padding: 28px 32px;
+            color: white;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(30, 58, 95, 0.15);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .title-area h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .title-area .subtitle {
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        .week-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 16px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .week-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .week-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .week-display {
+            font-size: 15px;
+            font-weight: 500;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* ===== 课表主体 ===== */
+        .schedule-wrapper {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .schedule-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .schedule {
+            display: grid;
+            grid-template-columns: 70px repeat(7, 1fr);
+            min-width: 800px;
+        }
+
+        /* 表头 */
+        .schedule-header {
+            display: contents;
+        }
+
+        .time-header {
+            background: #f8fafc;
+            padding: 16px 8px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a5568;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .day-header {
+            background: #f8fafc;
+            padding: 16px 8px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+            border-bottom: 1px solid #e2e8f0;
+            border-left: 1px solid #e2e8f0;
+        }
+
+        .day-header.today {
+            background: #ebf4ff;
+            color: #2b6cb0;
+        }
+
+        .day-header .date {
+            font-size: 12px;
+            font-weight: 400;
+            color: #718096;
+            margin-top: 2px;
+        }
+
+        /* 时间列 */
+        .time-col {
+            padding: 16px 8px;
+            text-align: center;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 12px;
+            color: #718096;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 90px;
+        }
+
+        .time-col .period {
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 4px;
+        }
+
+        .time-col .time {
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        /* 课程格子 */
+        .day-col {
+            border-left: 1px solid #edf2f7;
+            border-bottom: 1px solid #edf2f7;
+            padding: 6px;
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .day-col.today-col {
+            background: #f7fafc;
+        }
+
+        /* 课程卡片 */
+        .course-card {
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 12px;
+            line-height: 1.5;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .course-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .course-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+        }
+
+        .course-card .course-name {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: #1a202c;
+        }
+
+        .course-card .course-room {
+            color: #4a5568;
+            margin-bottom: 2px;
+        }
+
+        .course-card .course-teacher {
+            color: #718096;
+            font-size: 11px;
+        }
+
+        /* 课程颜色主题 */
+        .course-blue { background: #ebf8ff; }
+        .course-blue::before { background: #3182ce; }
+        .course-blue .course-name { color: #2b6cb0; }
+
+        .course-green { background: #f0fff4; }
+        .course-green::before { background: #38a169; }
+        .course-green .course-name { color: #276749; }
+
+        .course-orange { background: #fffaf0; }
+        .course-orange::before { background: #ed8936; }
+        .course-orange .course-name { color: #c05621; }
+
+        .course-purple { background: #faf5ff; }
+        .course-purple::before { background: #805ad5; }
+        .course-purple .course-name { color: #6b46c1; }
+
+        .course-red { background: #fff5f5; }
+        .course-red::before { background: #e53e3e; }
+        .course-red .course-name { color: #c53030; }
+
+        .course-teal { background: #e6fffa; }
+        .course-teal::before { background: #319795; }
+        .course-teal .course-name { color: #2c7a7b; }
+
+        /* 无课程 */
+        .empty {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #cbd5e0;
+            font-size: 12px;
+        }
+
+        /* ===== 底部信息 ===== */
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #a0aec0;
+            padding: 16px;
+        }
+
+        /* ===== 图例 ===== */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+            padding: 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #4a5568;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        /* ===== 移动端适配 ===== */
+        @media (max-width: 640px) {
+            body {
+                padding: 12px 8px;
+            }
+
+            .header {
+                padding: 20px;
+                border-radius: 12px;
+            }
+
+            .title-area h1 {
+                font-size: 18px;
+            }
+
+            .header-top {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .week-control {
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部区域 -->
+        <div class="header">
+            <div class="header-top">
+                <div class="title-area">
+                    <h1>2025-2026学年第一学期</h1>
+                    <p class="subtitle">工业工程与管理专业 · 研究生课表</p>
+                </div>
+                <div class="week-control">
+                    <button class="week-btn" id="prevWeek">&lt;</button>
+                    <span class="week-display" id="weekDisplay">第 1 周</span>
+                    <button class="week-btn" id="nextWeek">&gt;</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 课表主体 -->
+        <div class="schedule-wrapper">
+            <div class="schedule-scroll">
+                <div class="schedule">
+                    <!-- 表头 -->
+                    <div class="time-header">时间</div>
+                    <div class="day-header" data-day="1">周一<span class="date" id="date1"></span></div>
+                    <div class="day-header" data-day="2">周二<span class="date" id="date2"></span></div>
+                    <div class="day-header" data-day="3">周三<span class="date" id="date3"></span></div>
+                    <div class="day-header" data-day="4">周四<span class="date" id="date4"></span></div>
+                    <div class="day-header" data-day="5">周五<span class="date" id="date5"></span></div>
+                    <div class="day-header" data-day="6">周六<span class="date" id="date6"></span></div>
+                    <div class="day-header" data-day="0">周日<span class="date" id="date0"></span></div>
+
+                    <!-- 第1-2节 -->
+                    <div class="time-col">
+                        <span class="period">第 1-2 节</span>
+                        <span class="time">08:00-09:40</span>
+                    </div>
+                    <div class="day-col" data-day="1" data-period="1">
+                        <div class="course-card course-blue">
+                            <div class="course-name">高级运筹学</div>
+                            <div class="course-room">海津楼 305</div>
+                            <div class="course-teacher">舒帆 教授</div>
+                        </div>
+                    </div>
+                    <div class="day-col" data-day="2" data-period="1">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="3" data-period="1">
+                        <div class="course-card course-green">
+                            <div class="course-name">供应链管理</div>
+                            <div class="course-room">物流工程楼 201</div>
+                            <div class="course-teacher">李明 副教授</div>
+                        </div>
+                    </div>
+                    <div class="day-col" data-day="4" data-period="1">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="5" data-period="1">
+                        <div class="course-card course-purple">
+                            <div class="course-name">数据挖掘与应用</div>
+                            <div class="course-room">信息工程楼 402</div>
+                            <div class="course-teacher">王华 教授</div>
+                        </div>
+                    </div>
+                    <div class="day-col" data-day="6" data-period="1">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="0" data-period="1">
+                        <div class="empty">—</div>
+                    </div>
+
+                    <!-- 第3-4节 -->
+                    <div class="time-col">
+                        <span class="period">第 3-4 节</span>
+                        <span class="time">10:00-11:40</span>
+                    </div>
+                    <div class="day-col" data-day="1" data-period="2">
+                        <div class="course-card course-blue">
+                            <div class="course-name">高级运筹学</div>
+                            <div class="course-room">海津楼 305</div>
+                            <div class="course-teacher">舒帆 教授</div>
+                        </div>
+                    </div>
+                    <div class="day-col" data-day="2" data-period="2">
+                        <div class="course-card course-orange">
+                            <div class="course-name">管理经济学</div>
+                            <div class="course-room">经管楼 108</div>
+                            <div class="course-teacher">张伟 副教授</div>
+                        </div>
+                    </div>
+                    <div class="day-col" data-day="3" data-period="2">
+                        <div class="course-card course-green">
+                            <div class="course-name">供应链管理</div>
+                            <div class="course-room">物流工程楼 201</div>
+                            <div class="course-teacher">李明 副教授</div>
+                        </div>
+                    </div>
+                    <div class="day-col" data-day="4" data-period="2">
+                        <div class="course-card course-red">
+                            <div class="course-name">学术英语写作</div>
+                            <div class="course-room">外语楼 301</div>
+                            <div class="course-teacher">Sarah 外教</div>
+                        </div>
+                    </div>
+                    <div class="day-col" data-day="5" data-period="2">
+                        <div class="course-card course-purple">
+                            <div class="course-name">数据挖掘与应用</div>
+                            <div class="course-room">信息工程楼 402</div>
+                            <div class="course-teacher">王华 教授</div>
+                        </div>
+                    </div>
+                    <div class="day-col" data-day="6" data-period="2">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="0" data-period="2">
+                        <div class="empty">—</div>
+                    </div>
+
+                    <!-- 第5-6节 -->
+                    <div class="time-col">
+                        <span class="period">第 5-6 节</span>
+                        <span class="time">14:00-15:40</span>
+                    </div>
+                    <div class="day-col" data-day="1" data-period="3">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="2" data-period="3">
+                        <div class="course-card course-teal">
+                            <div class="course-name">机器学习基础</div>
+                            <div class="course-room">信息楼 501</div>
+                            <div class="course-teacher">陈强 教授</div>
+                        </div>
+                    </div>
+                    <div class="day-col" data-day="3" data-period="3">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="4" data-period="3">
+                        <div class="course-card course-teal">
+                            <div class="course-name">机器学习基础</div>
+                            <div class="course-room">信息楼 501</div>
+                            <div class="course-teacher">陈强 教授</div>
+                        </div>
+                    </div>
+                    <div class="day-col" data-day="5" data-period="3">
+                        <div class="course-card course-orange">
+                            <div class="course-name">项目管理</div>
+                            <div class="course-room">经管楼 205</div>
+                            <div class="course-teacher">刘洋 副教授</div>
+                        </div>
+                    </div>
+                    <div class="day-col" data-day="6" data-period="3">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="0" data-period="3">
+                        <div class="empty">—</div>
+                    </div>
+
+                    <!-- 第7-8节 -->
+                    <div class="time-col">
+                        <span class="period">第 7-8 节</span>
+                        <span class="time">16:00-17:40</span>
+                    </div>
+                    <div class="day-col" data-day="1" data-period="4">
+                        <div class="course-card course-purple">
+                            <div class="course-name">研讨课</div>
+                            <div class="course-room">导师办公室</div>
+                            <div class="course-teacher">舒帆 教授</div>
+                        </div>
+                    </div>
+                    <div class="day-col" data-day="2" data-period="4">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="3" data-period="4">
+                        <div class="course-card course-red">
+                            <div class="course-name">学术英语写作</div>
+                            <div class="course-room">外语楼 301</div>
+                            <div class="course-teacher">Sarah 外教</div>
+                        </div>
+                    </div>
+                    <div class="day-col" data-day="4" data-period="4">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="5" data-period="4">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="6" data-period="4">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="0" data-period="4">
+                        <div class="empty">—</div>
+                    </div>
+
+                    <!-- 第9-10节 -->
+                    <div class="time-col">
+                        <span class="period">第 9-10 节</span>
+                        <span class="time">19:00-20:40</span>
+                    </div>
+                    <div class="day-col" data-day="1" data-period="5">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="2" data-period="5">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="3" data-period="5">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="4" data-period="5">
+                        <div class="course-card course-green">
+                            <div class="course-name">文献阅读研讨</div>
+                            <div class="course-room">图书馆研讨室</div>
+                            <div class="course-teacher">教研组</div>
+                        </div>
+                    </div>
+                    <div class="day-col" data-day="5" data-period="5">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="6" data-period="5">
+                        <div class="empty">—</div>
+                    </div>
+                    <div class="day-col" data-day="0" data-period="5">
+                        <div class="empty">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 课程图例 -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot" style="background:#3182ce;"></div>
+                <span>专业课</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background:#38a169;"></div>
+                <span>方向课</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background:#805ad5;"></div>
+                <span>工具课</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background:#ed8936;"></div>
+                <span>管理类</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background:#e53e3e;"></div>
+                <span>语言类</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background:#319795;"></div>
+                <span>技术类</span>
+            </div>
+        </div>
+
+        <!-- 底部 -->
+        <div class="footer">
+            课表数据仅供参考 · 以教务处实际通知为准
+        </div>
+    </div>
+
+    <script>
+        // ===== 周次切换功能 =====
+        let currentWeek = 1;
+        const totalWeeks = 18;
+
+        const weekDisplay = document.getElementById('weekDisplay');
+        const prevBtn = document.getElementById('prevWeek');
+        const nextBtn = document.getElementById('nextWeek');
+
+        function updateWeekDisplay() {
+            weekDisplay.textContent = `第 ${currentWeek} 周`;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentWeek > 1) {
+                currentWeek--;
+                updateWeekDisplay();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentWeek < totalWeeks) {
+                currentWeek++;
+                updateWeekDisplay();
+            }
+        });
+
+        // ===== 今日高亮功能 =====
+        function highlightToday() {
+            const today = new Date().getDay(); // 0=周日, 1=周一...
+            const todayHeaders = document.querySelectorAll('.day-header');
+            const todayCols = document.querySelectorAll('.day-col');
+
+            todayHeaders.forEach(header => {
+                if (parseInt(header.dataset.day) === today) {
+                    header.classList.add('today');
+                } else {
+                    header.classList.remove('today');
+                }
+            });
+
+            todayCols.forEach(col => {
+                if (parseInt(col.dataset.day) === today) {
+                    col.classList.add('today-col');
+                } else {
+                    col.classList.remove('today-col');
+                }
+            });
+
+            // 更新日期显示
+            updateDateLabels();
+        }
+
+        // ===== 日期标签更新 =====
+        function updateDateLabels() {
+            // 以当前周为基准，计算周一到周日的日期
+            const now = new Date();
+            const dayOfWeek = now.getDay(); // 0=周日
+            const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 本周一的偏移
+            const monday = new Date(now);
+            monday.setDate(now.getDate() + diff + (currentWeek - 1) * 7);
+
+            const days = ['1', '2', '3', '4', '5', '6', '0']; // 周一到周日对应的day值
+            days.forEach((day, index) => {
+                const date = new Date(monday);
+                date.setDate(monday.getDate() + index);
+                const month = date.getMonth() + 1;
+                const dateNum = date.getDate();
+                const el = document.getElementById(`date${day}`);
+                if (el) {
+                    el.textContent = `${month}/${dateNum}`;
+                }
+            });
+        }
+
+        // 初始化
+        updateWeekDisplay();
+        highlightToday();
+    </script>
+</body>
+</html>
